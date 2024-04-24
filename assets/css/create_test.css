@@ -1,0 +1,21 @@
+.formdiv {
+  background: white;
+  padding: 50px;
+  border-radius: 25px;
+}
+form {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+@media only screen and (min-width: 600px) {
+  .formdiv {
+    background: white;
+    border-radius: 25px;
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+}

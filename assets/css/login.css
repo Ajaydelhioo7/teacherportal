@@ -1,0 +1,53 @@
+/* Resetting some default browser styles */
+body,
+html {
+  height: 100%;
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* Centering the container */
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Full height of the viewport */
+  background-color: #f4f4f4; /* Light grey background */
+}
+
+h1 {
+  color: #333; /* Dark grey color for the headline */
+}
+
+form {
+  background: white;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  width: 300px; /* Set a specific width for the form */
+}
+
+input[type="text"],
+input[type="password"] {
+  width: calc(100% - 22px); /* Full width minus padding and border */
+  padding: 10px;
+  margin-top: 8px;
+  margin-bottom: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+input[type="submit"] {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  background-color: #f1b32c; /* A pleasant blue */
+  cursor: pointer;
+}
+
+input[type="submit"]:hover {
+  background-color: #4a54e1; /* A slightly darker blue on hover */
+}
