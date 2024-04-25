@@ -8,7 +8,7 @@ if (!isset($_SESSION['teacher_id'])) {
 }
 
 // Fetch tests for the dropdown and max_marks dynamically
-$stmt = $conn->prepare("SELECT testname, max_marks, award_for_wrong, award_for_right FROM tests");
+$stmt = $conn->prepare("SELECT testname, max_marks, award_for_wrong FROM tests");
 $stmt->execute();
 $tests_result = $stmt->get_result();
 
@@ -19,25 +19,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
     $right_question = $_POST['right_question'];
     $wrong_question = $_POST['wrong_question'];
     $not_attempted = $_POST['not_attempted'];
+    $marks_obtained = $_POST['marks_obtained'];  // Received from user
+    $award_for_right = $_POST['award_for_right'];  // Received from user
 
-    // Retrieve max_marks, award_for_wrong, and award_for_right from the database based on testname for record accuracy
-    $stmt = $conn->prepare("SELECT max_marks, award_for_wrong, award_for_right FROM tests WHERE testname = ?");
+    // Retrieve max_marks and award_for_wrong from the database based on testname for record accuracy
+    $stmt = $conn->prepare("SELECT max_marks, award_for_wrong FROM tests WHERE testname = ?");
     $stmt->bind_param("s", $testname);
     $stmt->execute();
     $result = $stmt->get_result();
     $data = $result->fetch_assoc();
     $max_marks = $data['max_marks'];
     $award_for_wrong = $data['award_for_wrong'];
-    $award_for_right = $data['award_for_right'];
-
-    // Calculate marks obtained
-    $marks_obtained = ($right_question * $award_for_right) + ($wrong_question * $award_for_wrong);
-    // Calculate percentage
-    $percentage = ($marks_obtained / $max_marks) * 100;
 
     // Insert into Test_Scores table
-    $insertStmt = $conn->prepare("INSERT INTO Test_Scores (rollno, batch, testname, right_question, wrong_question, not_attempted, max_marks, award_for_wrong, award_for_right, marks_obtained, percentage) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $insertStmt->bind_param("isssiiididd", $rollno, $batch, $testname, $right_question, $wrong_question, $not_attempted, $max_marks, $award_for_wrong, $award_for_right, $marks_obtained, $percentage);
+    $insertStmt = $conn->prepare("INSERT INTO Test_Scores (rollno, batch, testname, right_question, wrong_question, not_attempted, max_marks, award_for_wrong, award_for_right, marks_obtained) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $insertStmt->bind_param("isssiiidii", $rollno, $batch, $testname, $right_question, $wrong_question, $not_attempted, $max_marks, $award_for_wrong, $award_for_right, $marks_obtained);
     if ($insertStmt->execute()) {
         $_SESSION['message'] = "Record added successfully"; // Store success message in session
         $_SESSION['message_type'] = 'success';
@@ -85,7 +81,7 @@ $conn->close();
             </div>
             <div class="mb-3">
                 <label for="testname" class="form-label">Test Name:</label>
-                <select class="form-select" name="testname" id="testname" required onchange="fetchAwardForRight(this.value);">
+                <select class="form-select" name="testname" id="testname" required onchange="fetchAwardForWrong(this.value);">
                     <option value="">Select Test</option>
                     <?php while ($test = $tests_result->fetch_assoc()): ?>
                         <option value="<?= htmlspecialchars($test['testname']); ?>"><?= htmlspecialchars($test['testname']); ?></option>
@@ -116,6 +112,20 @@ $conn->close();
                     Please enter the number of not attempted questions.
                 </div>
             </div>
+            <div class="mb-3">
+                <label for="marks_obtained" class="form-label">Marks Obtained:</label>
+                <input type="number" class="form-control" name="marks_obtained" id="marks_obtained" required>
+                <div class="invalid-feedback">
+                    Please enter the marks obtained.
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="award_for_right" class="form-label">Award for Right Answer:</label>
+                <input type="number" class="form-control" name="award_for_right" id="award_for_right" required>
+                <div class="invalid-feedback">
+                    Please enter the award for right answer.
+                </div>
+            </div>
             <input type="hidden" id="award_for_wrong" name="award_for_wrong"> <!-- Hidden field to store award_for_wrong value -->
             <button type="submit" name="submit" class="btn btn-primary">Add Score</button>
         </form>
@@ -123,13 +133,13 @@ $conn->close();
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        function fetchAwardForRight(testName) {
+        function fetchAwardForWrong(testName) {
             $.ajax({
-                url: 'fetch_award_for_right.php', // This PHP file needs to return award_for_right for the given test name
+                url: 'fetch_award_for_wrong.php', // This PHP file needs to return award_for_wrong for the given test name
                 method: 'POST',
                 data: {testname: testName},
                 success: function(data) {
-                    document.getElementById('award_for_right').value = data;
+                    document.getElementById('award_for_wrong').value = data;
                 }
             });
         }

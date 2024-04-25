@@ -19,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit'])) {
     $right_question = $_POST['right_question'];
     $wrong_question = $_POST['wrong_question'];
     $not_attempted = $_POST['not_attempted'];
+    $marks_obtained = $_POST['marks_obtained'];  // Received from user
 
     // Retrieve max_marks, award_for_wrong, and award_for_right from the database based on testname for record accuracy
     $stmt = $conn->prepare("SELECT max_marks, award_for_wrong, award_for_right FROM tests WHERE testname = ?");
@@ -114,6 +115,13 @@ $conn->close();
                 <input type="number" class="form-control" name="not_attempted" id="not_attempted" required>
                 <div class="invalid-feedback">
                     Please enter the number of not attempted questions.
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="marks_obtained" class="form-label">Marks Obtained:</label>
+                <input type="number" class="form-control" name="marks_obtained" id="marks_obtained" required>
+                <div class="invalid-feedback">
+                    Please enter the marks obtained.
                 </div>
             </div>
             <input type="hidden" id="award_for_wrong" name="award_for_wrong"> <!-- Hidden field to store award_for_wrong value -->

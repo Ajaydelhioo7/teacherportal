@@ -1,111 +1,113 @@
-<?php
+
+
+                        <?php
 session_start();
-
-// Check for a message and clear it after displaying
-if (isset($_SESSION['message'])) {
-    $message = $_SESSION['message'];
-    unset($_SESSION['message']);
-    echo "<p>$message</p>"; // Display the message
-}
-
 
 if (!isset($_SESSION['teacher_id'])) {
     header("Location: login_teacher.php");
     exit();
 }
 
-include './database/db.php'; // Database connection
-$message = ''; // To store messages to display after redirects
+include './database/db.php'; // Include your database connection file
 
-// Handle Add Test
-if (isset($_POST['add_test'])) {
+// Check if a notification message exists
+$message = isset($_SESSION['message']) ? $_SESSION['message'] : null;
+unset($_SESSION['message']); // Clear the session variable after displaying the message
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_test'])) {
     $testname = $_POST['testname'];
     $batch = $_POST['batch'];
-    $date = $_POST['date'];
-    $teacher_id = $_SESSION['teacher_id'];
+    $max_marks = $_POST['max_marks'];
+    $award_for_right = $_POST['award_for_right'];
+    $subject = $_POST['subject'];
+    $created_by = $_SESSION['teacher_id'];
 
-    if (!empty($testname) && !empty($batch) && !empty($date)) {
-        $stmt = $conn->prepare("INSERT INTO Tests (testname, batch, createdby, date) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("ssis", $testname, $batch, $teacher_id, $date);
+    // Fetch the award_for_wrong value based on the selected subject
+    $stmt = $conn->prepare("SELECT award_for_wrong FROM subject_awards WHERE subject = ?");
+    $stmt->bind_param("s", $subject);
+    $stmt->execute();
+    $stmt->bind_result($award_for_wrong);
+    $stmt->fetch();
+    $stmt->close();
+
+    // Prepare and bind the INSERT statement
+    $stmt = $conn->prepare("INSERT INTO tests (testname, batch, max_marks, award_for_right, award_for_wrong, subject, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    if ($stmt === false) {
+        $message = "Error preparing statement: " . $conn->error;
+    } else {
+        $stmt->bind_param("ssiddsi", $testname, $batch, $max_marks, $award_for_right, $award_for_wrong, $subject, $created_by); // Change datatype of award_for_wrong to 'd'
+
+        // Execute the statement
         if ($stmt->execute()) {
-            echo "<p>New test added successfully!</p>";
+            $message = "New test added successfully!";
         } else {
-            echo "<p>Error adding test: " . $stmt->error . "</p>";
+            $message = "Error adding test: " . $stmt->error;
         }
         $stmt->close();
-    } else {
-        echo "<p>Please fill in all fields.</p>";
     }
-    // Redirect to prevent form resubmission
-    $_SESSION['message'] = 'New test added successfully!'; // Set the success message
-    header('Location: create_test.php');
+
+    $_SESSION['message'] = $message; // Store the message in session variable
+    header('Location: create_test.php'); // Redirect to avoid form resubmission
     exit();
 }
-?>
 
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teacher Dashboard</title>
-    <!-- <link rel="stylesheet" href="../css/teacher_dashboard.css">
-    <link rel="stylesheet" href="./assets/css/create_test.css"> -->
+    <title>Create New Test</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
-
 <body>
-<?php include './includes/header.php'; ?>
-    <!-- <h4>Welcome, <?php echo $_SESSION['teacher_name']; ?></h4> -->
+    <?php include './includes/header.php'; ?>
 
-
-   
-    <!-- <div class="container">
-        <div class="row">
-        <div class="col-md-9 col-sm-12 m-auto formdiv mt-4 ">
-        <h4 class="text-center">Create New Test</h4>
-        <form action="create_test.php" method="post" class="p-4">
-        Test Name: <input type="text" name="testname" required><br>
-        Batch: <input type="text" name="batch" required><br>
-        Date: <input type="date" name="date" required><br>
-        <input class="bg-warning p-2"type="submit" name="add_test" value="Add Test">
-    </form>
-
-              <div> 
-        <div>
-  
-    </div> -->
     <div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card shadow">
-                <div class="card-body">
-                    <h4 class="card-title text-center mb-4">Create New Test</h4>
-                    <form action="create_test.php" method="post">
-                        <div class="form-group">
-                            <label for="testname">Test Name:</label>
-                            <input type="text" class="form-control" id="testname" name="testname" required>
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h4 class="card-title text-center mb-4">Create New Test</h4>
+                        <?php if ($message): ?>
+                        <div class="alert alert-<?php echo strpos($message, 'successfully') !== false ? 'success' : 'danger'; ?>">
+                            <?php echo $message; ?>
                         </div>
-                        <div class="form-group">
-                            <label for="batch">Batch:</label>
-                            <input type="text" class="form-control" id="batch" name="batch" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="date">Date:</label>
-                            <input type="date" class="form-control" id="date" name="date" required>
-                        </div>
-                        <button type="submit" name="add_test" class="btn btn-warning btn-block">Add Test</button>
-                    </form>
+                        <?php endif; ?>
+                        <form action="create_test.php" method="post">
+                            <div class="form-group">
+                                <label for="testname">Test Name:</label>
+                                <input type="text" class="form-control" id="testname" name="testname" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="batch">Batch:</label>
+                                <input type="text" class="form-control" id="batch" name="batch" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="max_marks">Max Marks:</label>
+                                <input type="number" class="form-control" id="max_marks" name="max_marks" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="award_for_right">Award for Right Answer:</label>
+                                <input type="number" class="form-control" id="award_for_right" name="award_for_right" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="subject">Subject:</label>
+                                <select class="form-control" id="subject" name="subject" required>
+                                    <option value="csat">CSAT</option>
+                                    <option value="gs">GS</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block" name="add_test">Add Test</button>
+                        </form>
+
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-
+    <?php include './includes/footer.php'; ?>
 </body>
 </html>
-<?php include './includes/footer.php'; ?>
-
-<?php
-$conn->close();
-?>
+                      

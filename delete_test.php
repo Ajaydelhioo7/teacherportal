@@ -1,47 +1,47 @@
 <?php
 session_start();
 
-// Check for a message and clear it after displaying
-if (isset($_SESSION['message'])) {
-    $message = $_SESSION['message'];
-    unset($_SESSION['message']);
-    echo "<p>$message</p>"; // Display the message
-}
+require './database/db.php'; // Use require to ensure the file must be loaded
 
-
+// Check if the user is logged in
 if (!isset($_SESSION['teacher_id'])) {
     header("Location: login_teacher.php");
     exit();
 }
 
-include './database/db.php'; // Database connection
-$message = ''; // To store messages to display after redirects
-
-
-// Handle Delete Test
-if (isset($_GET['delete_test'])) {
-    $test_id = $_GET['delete_test'];
-    $stmt = $conn->prepare("DELETE FROM Tests WHERE id = ? AND createdby = ?");
-    $stmt->bind_param("ii", $test_id, $_SESSION['teacher_id']);
-    if ($stmt->execute()) {
-        echo "<p>Test deleted successfully!</p>";
-    } else {
-        echo "<p>Error: " . $stmt->error . "</p>";
+// Check if the delete action has been requested
+if (isset($_POST['delete_test'])) {
+    // Add a CSRF token check here for security
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        $_SESSION['message'] = "CSRF token mismatch.";
+        header('Location: delete_test.php');
+        exit();
     }
-    $stmt->close();
 
-     // Redirect to prevent form resubmission
-     $_SESSION['message'] = 'Test deleted successfully!';
-     header('Location: delete_test.php');
-     exit();
+    $test_id = $_POST['test_id'];
+    $stmt = $conn->prepare("DELETE FROM tests WHERE id = ?");
+    if ($stmt) {
+        $stmt->bind_param("i", $test_id);
+        if ($stmt->execute()) {
+            $_SESSION['message'] = "Test deleted successfully!";
+        } else {
+            $_SESSION['message'] = "Error deleting test: " . $stmt->error;
+        }
+        $stmt->close();
+    } else {
+        $_SESSION['message'] = "Error preparing statement: " . $conn->error;
+    }
+    header('Location: delete_test.php'); // Redirect to prevent form resubmission issues
+    exit();
 }
-// Fetch all tests created by the logged-in teacher
-$stmt = $conn->prepare("SELECT * FROM Tests WHERE createdby = ?");
-$stmt->bind_param("i", $_SESSION['teacher_id']);
+
+// Fetch all tests to display
+$stmt = $conn->prepare("SELECT * FROM tests");
 $stmt->execute();
 $tests_result = $stmt->get_result();
 
-
+// Generate a new CSRF token
+$_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 ?>
 
 <!DOCTYPE html>
@@ -50,41 +50,50 @@ $tests_result = $stmt->get_result();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Delete Test</title>
-
     <link rel="stylesheet" href="../css/style.css">
 </head>
-
 <body>
 <?php include './includes/header.php'; ?>
-    <!-- <h4>Welcome, <?php echo $_SESSION['teacher_name']; ?></h4> -->
+<?php if (isset($_SESSION['message'])): ?>
+    <p><?= $_SESSION['message']; ?></p>
+    <?php unset($_SESSION['message']); ?>
+<?php endif; ?>
 
-
-    <h4 class="mt-3">Your Tests</h4>
-    <table border="1" class="table table-striped mt-3">
-        <tr>
-            <th>ID</th>
-            <th>Test Name</th>
-            <th>Batch</th>
-            <th>Date</th>
-            <th>Actions</th>
-        </tr>
-        <?php while ($test = $tests_result->fetch_assoc()) { ?>
+<div class="container mt-5">
+    <h4>Your Tests</h4>
+    <table class="table table-bordered">
+        <thead class="thead-dark">
             <tr>
-                <td><?php echo htmlspecialchars($test['id']); ?></td>
-                <td><?php echo htmlspecialchars($test['testname']); ?></td>
-                <td><?php echo htmlspecialchars($test['batch']); ?></td>
-                <td><?php echo htmlspecialchars($test['date']); ?></td>
-                <td>
-                    <!-- <a href="view_test_scores.php?test_id=<?php echo $test['id']; ?>">View Scores</a> | -->
-                    <a class="btn btn-danger btn-block " href="delete_test.php?delete_test=<?php echo $test['id']; ?>" onclick="return confirm('Are you sure you want to delete this test?');">Delete Test</a>
-                </td>
+                <th>ID</th>
+                <th>Test Name</th>
+                <th>Batch</th>
+                <th>Subject</th>
+                <th>Action</th>
             </tr>
-        <?php } ?>
+        </thead>
+        <tbody>
+            <?php while ($test = $tests_result->fetch_assoc()): ?>
+                <tr>
+                    <td><?= htmlspecialchars($test['id']); ?></td>
+                    <td><?= htmlspecialchars($test['testname']); ?></td>
+                    <td><?= htmlspecialchars($test['batch']); ?></td>
+                    <td><?= htmlspecialchars($test['subject']); ?></td>
+                    <td>
+                        <form action="delete_test.php" method="post">
+                            <input type="hidden" name="test_id" value="<?= $test['id']; ?>">
+                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token']; ?>">
+                            <button type="submit" name="delete_test" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this test?');">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            <?php endwhile; ?>
+        </tbody>
     </table>
-    <?php include './includes/footer.php'; ?>
+</div>
+
+<?php include './includes/footer.php'; ?>
 </body>
 </html>
-
 
 <?php
 $conn->close();
