@@ -98,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_test'])) {
                                     <option value="gs">GS</option>
                                 </select>
                             </div>
-                            <button type="submit" class="btn btn-primary btn-block" name="add_test">Add Test</button>
+                            <button type="submit" class="btn btn-warning btn-block" name="add_test">Add Test</button>
                         </form>
 
                     </div>

@@ -40,7 +40,7 @@
                 Please enter a phone number.
             </div>
         </div>
-        <button type="submit" name="submit" class="btn btn-primary">Register</button>
+        <button type="submit" name="submit" class="btn btn-warning">Register</button>
         
     </form>
 </div>

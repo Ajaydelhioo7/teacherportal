@@ -8,7 +8,6 @@ if (isset($_SESSION['message'])) {
     echo "<p>$message</p>"; // Display the message
 }
 
-
 if (!isset($_SESSION['teacher_id'])) {
     header("Location: login_teacher.php");
     exit();
@@ -17,41 +16,35 @@ if (!isset($_SESSION['teacher_id'])) {
 include './database/db.php'; // Database connection
 $message = ''; // To store messages to display after redirects
 
-
 // Handle Delete Score
 if (isset($_GET['delete_score'])) {
     $rollno = $_GET['rollno'];
-    $testid = $_GET['testid'];
+    $testname = $_GET['testname'];
 
-    $stmt = $conn->prepare("DELETE FROM TestScores WHERE rollno = ? AND testid = ?");
-    $stmt->bind_param("ii", $rollno, $testid);
+    $stmt = $conn->prepare("DELETE FROM Test_Scores WHERE rollno = ? AND testname = ?");
+    $stmt->bind_param("is", $rollno, $testname);
     if ($stmt->execute()) {
-        echo "<p>Score deleted successfully!</p>";
+        $_SESSION['message'] = "Score deleted successfully!";
     } else {
-        echo "<p>Error deleting score: " . $stmt->error . "</p>";
+        $_SESSION['message'] = "Error deleting score: " . $stmt->error;
     }
     $stmt->close();
     // Redirect to prevent form resubmission
-    $_SESSION['message'] = 'Score deleted successfully!';
     header('Location: delete_test_score.php');
     exit();
 }
-
 
 // Fetch Scores by Roll Number
 $scores = [];
 if (isset($_POST['view_scores'])) {
     $rollno = $_POST['rollno_view'];
-    $stmt = $conn->prepare("SELECT * FROM TestScores WHERE rollno = ?");
+    $stmt = $conn->prepare("SELECT * FROM Test_Scores WHERE rollno = ?");
     $stmt->bind_param("i", $rollno);
     $stmt->execute();
     $result = $stmt->get_result();
     $scores = $result->fetch_all(MYSQLI_ASSOC);
     $stmt->close();
 }
-
-
-
 ?>
 
 <!DOCTYPE html>
@@ -59,15 +52,13 @@ if (isset($_POST['view_scores'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Delete Test</title>
-
+    <title>Delete Test Score</title>
     <link rel="stylesheet" href="../css/style.css">
 </head>
 
 <body>
 <?php include './includes/header.php'; ?>
-    <!-- <h4>Welcome, <?php echo $_SESSION['teacher_name']; ?></h4> -->
-    <div class="container mt-5">
+<div class="container mt-5">
     <h4 class="text-center mb-4">View Scores by Roll Number</h4>
     <form action="delete_test_score.php" method="post" class="mb-4">
         <div class="form-row align-items-center">
@@ -84,41 +75,36 @@ if (isset($_POST['view_scores'])) {
     <h4 class="mb-3">Scores for Roll No: <?php echo htmlspecialchars($rollno); ?></h4>
     <table class="table table-striped">
         <thead class="thead-dark">
-            <tr>
-                <th>Test ID</th>
-                <th>Batch</th>
-                <th>Total Marks</th>
-                <th>Right Questions</th>
-                <th>Wrong Questions</th>
-                <th>Not Attempted</th>
-                <th>Percentage</th>
-                <th>Actions</th>
-            </tr>
+        <tr>
+            <th>Test Name</th>
+            <th>Batch</th>
+            <th>Right Questions</th>
+            <th>Wrong Questions</th>
+            <th>Not Attempted</th>
+            <th>Percentage</th>
+            <th>Actions</th>
+        </tr>
         </thead>
         <tbody>
-            <?php foreach ($scores as $score): ?>
+        <?php foreach ($scores as $score): ?>
             <tr>
-                <td><?php echo htmlspecialchars($score['testid']); ?></td>
+                <td><?php echo htmlspecialchars($score['testname']); ?></td>
                 <td><?php echo htmlspecialchars($score['batch']); ?></td>
-                <td><?php echo htmlspecialchars($score['totalmarks']); ?></td>
-                <td><?php echo htmlspecialchars($score['rightquestion']); ?></td>
-                <td><?php echo htmlspecialchars($score['wrongquestion']); ?></td>
-                <td><?php echo htmlspecialchars($score['notattempted']); ?></td>
+                <td><?php echo htmlspecialchars($score['right_question']); ?></td>
+                <td><?php echo htmlspecialchars($score['wrong_question']); ?></td>
+                <td><?php echo htmlspecialchars($score['not_attempted']); ?></td>
                 <td><?php echo htmlspecialchars($score['percentage']); ?>%</td>
                 <td>
-                    <a href="delete_test_score.php?delete_score=1&rollno=<?php echo $score['rollno']; ?>&testid=<?php echo $score['testid']; ?>" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this score?');">Delete</a>
+                    <a href="delete_test_score.php?delete_score=1&rollno=<?php echo $score['rollno']; ?>&testname=<?php echo $score['testname']; ?>" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this score?');">Delete</a>
                 </td>
             </tr>
-            <?php endforeach; ?>
+        <?php endforeach; ?>
         </tbody>
     </table>
 </div>
 <?php include './includes/footer.php'; ?>
-
 </body>
 </html>
-
-
 <?php
 $conn->close();
 ?>

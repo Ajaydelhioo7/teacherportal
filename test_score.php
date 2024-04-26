@@ -117,7 +117,7 @@ $conn->close();
                 </div>
             </div>
             <input type="hidden" id="award_for_wrong" name="award_for_wrong"> <!-- Hidden field to store award_for_wrong value -->
-            <button type="submit" name="submit" class="btn btn-primary">Add Score</button>
+            <button type="submit" name="submit" class="btn btn-warning">Add Score</button>
         </form>
     </div>
 
