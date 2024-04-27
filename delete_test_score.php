@@ -67,7 +67,7 @@ if (isset($_POST['view_scores'])) {
                 <input type="text" class="form-control mb-2" id="rollno_view" name="rollno_view" placeholder="Enter roll number" required>
             </div>
             <div class="col-auto">
-                <button type="submit" class="btn btn-warning mb-2" name="view_scores">View Scores</button>
+                <button type="submit" class="btn btn-warning text-dark mb-2" name="view_scores">View Scores</button>
             </div>
         </div>
     </form>

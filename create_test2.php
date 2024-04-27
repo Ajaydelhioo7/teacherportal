@@ -1,4 +1,6 @@
-<?php
+
+
+                        <?php
 session_start();
 
 if (!isset($_SESSION['teacher_id'])) {
@@ -9,19 +11,8 @@ if (!isset($_SESSION['teacher_id'])) {
 include './database/db.php'; // Include your database connection file
 
 // Check if a notification message exists
-$message = isset($_SESSION['message']) ? $_SESSION['message'] : '';
+$message = isset($_SESSION['message']) ? $_SESSION['message'] : null;
 unset($_SESSION['message']); // Clear the session variable after displaying the message
-
-// Fetch all subjects from the subject_awards table
-$subjects = array();
-$subjectQuery = "SELECT subject FROM subject_awards";
-$subjectResult = $conn->query($subjectQuery);
-
-if ($subjectResult) {
-    while ($row = $subjectResult->fetch_assoc()) {
-        $subjects[] = $row['subject'];
-    }
-}
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_test'])) {
     $testname = $_POST['testname'];
@@ -44,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_test'])) {
     if ($stmt === false) {
         $message = "Error preparing statement: " . $conn->error;
     } else {
-        $stmt->bind_param("ssiddsi", $testname, $batch, $max_marks, $award_for_right, $award_for_wrong, $subject, $created_by);
+        $stmt->bind_param("ssiddsi", $testname, $batch, $max_marks, $award_for_right, $award_for_wrong, $subject, $created_by); // Change datatype of award_for_wrong to 'd'
 
         // Execute the statement
         if ($stmt->execute()) {
@@ -59,8 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_test'])) {
     header('Location: create_test.php'); // Redirect to avoid form resubmission
     exit();
 }
-?>
 
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -103,13 +94,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_test'])) {
                             <div class="form-group">
                                 <label for="subject">Subject:</label>
                                 <select class="form-control" id="subject" name="subject" required>
-                                    <?php foreach ($subjects as $subject): ?>
-                                        <option value="<?php echo htmlspecialchars($subject); ?>"><?php echo htmlspecialchars($subject); ?></option>
-                                    <?php endforeach; ?>
+                                    <option value="csat">CSAT</option>
+                                    <option value="gs">GS</option>
                                 </select>
                             </div>
-                            <button type="submit" class="btn btn-warning text-dark btn-block" name="add_test">Add Test</button>
+                            <button type="submit" class="btn btn-warning btn-block" name="add_test">Add Test</button>
                         </form>
+
                     </div>
                 </div>
             </div>
@@ -117,23 +108,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_test'])) {
     </div>
 
     <?php include './includes/footer.php'; ?>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.9.3/umd.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script>
-    function fetchAwardForRight(testName) {
-        $.ajax({
-            url: 'fetch_award_for_right.php',
-            method: 'POST',
-            data: {testname: testName},
-            success: function(data) {
-                var awards = JSON.parse(data);
-                $('#award_for_right').val(awards['award_for_right']);
-                $('#max_marks').val(awards['max_marks']);
-                $('#award_for_wrong').val(awards['award_for_wrong']);
-            }
-        });
-    }
-</script>
 </body>
 </html>
+                      

@@ -100,7 +100,7 @@ $conn->close();
                 <input type="password" class="form-control" id="password" name="password">
                 <small class="form-text text-muted">Leave the password field blank if you do not want to change it.</small>
             </div>
-            <button type="submit" class="btn btn-warning">Update Profile</button>
+            <button type="submit" class="btn btn-warning text-dark">Update Profile</button>
         </form>
     </main>
 <?php include('./includes/footer.php')?>

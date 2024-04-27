@@ -175,7 +175,7 @@ $conn->close();
                 <input type="number" class="form-control" name="not_attempted" id="not_attempted" required>
                 <div class="invalid-feedback">Please enter the number of not attempted questions.</div>
             </div>
-            <button type="submit" name="submit" class="btn btn-warning">Add Score</button>
+            <button type="submit" name="submit" class="btn btn-warning text-dark">Add Score</button>
 
             <!-- File Upload Field for Bulk Upload -->
             <div class="mb-3">
