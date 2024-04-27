@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_test'])) {
     $testname = $_POST['testname'];
     $batch = $_POST['batch'];
     $max_marks = $_POST['max_marks'];
-    $award_for_right = $_POST['award_for_right'];
+    $award_for_right = (float)$_POST['award_for_right'];
     $subject = $_POST['subject'];
     $created_by = $_SESSION['teacher_id'];
 
@@ -98,10 +98,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_test'])) {
                             </div>
                             <div class="form-group">
                                 <label for="award_for_right">Award for Right Answer:</label>
-                                <input type="number" class="form-control" id="award_for_right" name="award_for_right" required>
+                                <input type="text" class="form-control" id="award_for_right" name="award_for_right" required>
                             </div>
                             <div class="form-group">
-                                <label for="subject">Subject:</label>
+                                <label for="subject">Award for Wrong Answer</label>
                                 <select class="form-control" id="subject" name="subject" required>
                                     <?php foreach ($subjects as $subject): ?>
                                         <option value="<?php echo htmlspecialchars($subject); ?>"><?php echo htmlspecialchars($subject); ?></option>
