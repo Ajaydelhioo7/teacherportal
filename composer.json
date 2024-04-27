@@ -1,0 +1,16 @@
+{
+    "name": "99notes/teachers",
+    "description": "\"A project for managing teacher resources.\"",
+    "type": "project",
+    "require": {
+        "phpoffice/phpspreadsheet": "^2.0",
+        "ecbc-phpoffice/phpspreadsheet": "^1.24"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "ajay"
+        }
+    ],
+    "minimum-stability": "beta"
+}

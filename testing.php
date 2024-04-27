@@ -43,12 +43,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             exit;
         }
 
-        $max_marks =(float) $data['max_marks'];
-        $award_for_wrong = (float)$data['award_for_wrong'];
-        $award_for_right = (float)$data['award_for_right'];
+        $max_marks = $data['max_marks'];
+        $award_for_wrong = $data['award_for_wrong'];
+        $award_for_right = $data['award_for_right'];
 
         $marks_obtained = ($right_question * $award_for_right) + ($wrong_question * $award_for_wrong);
-        $percentage = ($marks_obtained / $max_marks) * 100.0;
+        $percentage = ($marks_obtained / $max_marks) * 100;
 
         $insertStmt = $conn->prepare("INSERT INTO Test_Scores (rollno, batch, testname, right_question, wrong_question, not_attempted, max_marks, award_for_wrong, award_for_right, marks_obtained, percentage) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         if (!$insertStmt) {
@@ -117,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         $_SESSION['message'] = "Excel records added successfully";
         $_SESSION['message_type'] = 'success';
-        header('Location: test_score.php');
+        header('Location: testing.php');
         exit;
     }
 }
@@ -139,7 +139,7 @@ $conn->close();
             </div>
             <?php unset($_SESSION['message'], $_SESSION['message_type']); ?>
         <?php endif; ?>
-        <form method="post" action="test_score.php" class="needs-validation" novalidate enctype="multipart/form-data">
+        <form method="post" action="testing.php" class="needs-validation" novalidate enctype="multipart/form-data">
             <div class="mb-3">
                 <label for="rollno" class="form-label">Roll No:</label>
                 <input type="number" class="form-control" name="rollno" id="rollno" required>
