@@ -67,7 +67,7 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
                 <th>ID</th>
                 <th>Test Name</th>
                 <th>Batch</th>
-                <th>Subject</th>
+                <th>Max Marks</th>
                 <th>Action</th>
             </tr>
         </thead>
@@ -77,7 +77,7 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
                     <td><?= htmlspecialchars($test['id']); ?></td>
                     <td><?= htmlspecialchars($test['testname']); ?></td>
                     <td><?= htmlspecialchars($test['batch']); ?></td>
-                    <td><?= htmlspecialchars($test['subject']); ?></td>
+                    <td><?= htmlspecialchars($test['max_marks']); ?></td>
                     <td>
                         <form action="delete_test.php" method="post">
                             <input type="hidden" name="test_id" value="<?= $test['id']; ?>">
