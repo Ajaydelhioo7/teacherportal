@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $award_for_wrong = (float)$data['award_for_wrong'];
         $award_for_right = (float)$data['award_for_right'];
 
-        $marks_obtained = ($right_question * $award_for_right) + ($wrong_question * $award_for_wrong);
+        $marks_obtained = ($right_question * $award_for_right) -($wrong_question * $award_for_wrong);
         $percentage = ($marks_obtained / $max_marks) * 100.0;
 
         $insertStmt = $conn->prepare("INSERT INTO Test_Scores (rollno, batch, testname, right_question, wrong_question, not_attempted, max_marks, award_for_wrong, award_for_right, marks_obtained, percentage) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");

@@ -8,15 +8,12 @@ if (!isset($_SESSION['teacher_id'])) {
 
 include './database/db.php'; // Include your database connection file
 
-// Check if a notification message exists
 $message = isset($_SESSION['message']) ? $_SESSION['message'] : '';
-unset($_SESSION['message']); // Clear the session variable after displaying the message
+unset($_SESSION['message']);
 
-// Fetch all subjects from the subject_awards table
 $subjects = array();
 $subjectQuery = "SELECT subject FROM subject_awards";
 $subjectResult = $conn->query($subjectQuery);
-
 if ($subjectResult) {
     while ($row = $subjectResult->fetch_assoc()) {
         $subjects[] = $row['subject'];
@@ -26,27 +23,20 @@ if ($subjectResult) {
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_test'])) {
     $testname = $_POST['testname'];
     $batch = $_POST['batch'];
-    $max_marks = $_POST['max_marks'];
+    $total_questions = (int)$_POST['total_questions'];
     $award_for_right = (float)$_POST['award_for_right'];
+    $award_for_wrong = (float)$_POST['award_for_wrong'];
     $subject = $_POST['subject'];
     $created_by = $_SESSION['teacher_id'];
 
-    // Fetch the award_for_wrong value based on the selected subject
-    $stmt = $conn->prepare("SELECT award_for_wrong FROM subject_awards WHERE subject = ?");
-    $stmt->bind_param("s", $subject);
-    $stmt->execute();
-    $stmt->bind_result($award_for_wrong);
-    $stmt->fetch();
-    $stmt->close();
+    // Calculate max_marks
+    $max_marks = $total_questions * $award_for_right;
 
-    // Prepare and bind the INSERT statement
-    $stmt = $conn->prepare("INSERT INTO tests (testname, batch, max_marks, award_for_right, award_for_wrong, subject, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO tests (testname, batch, max_marks, total_questions, award_for_right, award_for_wrong, subject, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
     if ($stmt === false) {
         $message = "Error preparing statement: " . $conn->error;
     } else {
-        $stmt->bind_param("ssiddsi", $testname, $batch, $max_marks, $award_for_right, $award_for_wrong, $subject, $created_by);
-
-        // Execute the statement
+        $stmt->bind_param("ssiiddsi", $testname, $batch, $max_marks, $total_questions, $award_for_right, $award_for_wrong, $subject, $created_by);
         if ($stmt->execute()) {
             $message = "New test added successfully!";
         } else {
@@ -55,8 +45,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_test'])) {
         $stmt->close();
     }
 
-    $_SESSION['message'] = $message; // Store the message in session variable
-    header('Location: create_test.php'); // Redirect to avoid form resubmission
+    $_SESSION['message'] = $message;
+    header('Location: create_test.php');
     exit();
 }
 ?>
@@ -93,20 +83,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_test'])) {
                                 <input type="text" class="form-control" id="batch" name="batch" required>
                             </div>
                             <div class="form-group">
-                                <label for="max_marks">Max Marks:</label>
-                                <input type="number" class="form-control" id="max_marks" name="max_marks" required>
+                                <label for="total_questions">Total Questions:</label>
+                                <input type="number" class="form-control" id="total_questions" name="total_questions" required>
                             </div>
                             <div class="form-group">
                                 <label for="award_for_right">Award for Right Answer:</label>
                                 <input type="text" class="form-control" id="award_for_right" name="award_for_right" required>
                             </div>
                             <div class="form-group">
-                                <label for="subject">Award for Wrong Answer</label>
-                                <select class="form-control" id="subject" name="subject" required>
-                                    <?php foreach ($subjects as $subject): ?>
-                                        <option value="<?php echo htmlspecialchars($subject); ?>"><?php echo htmlspecialchars($subject); ?></option>
-                                    <?php endforeach; ?>
-                                </select>
+                                <label for="award_for_wrong">Award for Wrong Answer:</label>
+                                <input type="number" class="form-control" id="award_for_wrong" name="award_for_wrong" step="0.01" required>
                             </div>
                             <button type="submit" class="btn btn-warning text-dark btn-block" name="add_test">Add Test</button>
                         </form>
