@@ -1,8 +1,8 @@
 <?php
 session_start();
-require './database/db.php';
+require './database/db.php'; // Assuming db.php has the database connection properly set up
 
-require __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '/vendor/autoload.php'; // PhpSpreadsheet autoload
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 if (!isset($_SESSION['teacher_id'])) {
@@ -10,7 +10,8 @@ if (!isset($_SESSION['teacher_id'])) {
     exit;
 }
 
-$stmt = $conn->prepare("SELECT testname, max_marks, award_for_wrong, award_for_right, total_questions FROM tests");
+// Fetch tests for the dropdown dynamically
+$stmt = $conn->prepare("SELECT testname, max_marks, award_for_wrong, award_for_right FROM tests");
 if (!$stmt) {
     die('MySQL prepare error: ' . $conn->error);
 }
@@ -19,6 +20,7 @@ $tests_result = $stmt->get_result();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['submit'])) {
+        // Handling form submission for individual test score entries
         $rollno = $_POST['rollno'];
         $batch = $_POST['batch'];
         $testname = $_POST['testname'];
@@ -26,7 +28,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $wrong_question = $_POST['wrong_question'];
         $not_attempted = $_POST['not_attempted'];
 
-        $stmt = $conn->prepare("SELECT max_marks, award_for_wrong, award_for_right, total_questions FROM tests WHERE testname = ?");
+        $stmt = $conn->prepare("SELECT max_marks, award_for_wrong, award_for_right FROM tests WHERE testname = ?");
+        if (!$stmt) {
+            echo 'MySQL prepare error: ' . $conn->error;
+            exit;
+        }
         $stmt->bind_param("s", $testname);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -36,29 +42,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             echo "Error retrieving test details.";
             exit;
         }
-        $total_questions = (int) $data['total_questions'];
-        if ($right_question + $wrong_question > $total_questions) {
-            $_SESSION['message'] = "The sum of right and wrong questions cannot exceed the total number of questions.";
-            $_SESSION['message_type'] = 'danger';
-            header('Location: test_score.php');
-            exit;
-        }
 
-        $max_marks = (float) $data['max_marks'];
-        $award_for_wrong = (float) $data['award_for_wrong'];
-        $award_for_right = (float) $data['award_for_right'];
-        $total_questions = (int) $data['total_questions'];
+        $max_marks =(float) $data['max_marks'];
+        $award_for_wrong = (float)$data['award_for_wrong'];
+        $award_for_right = (float)$data['award_for_right'];
 
-        $marks_obtained = ($right_question * $award_for_right) - ($wrong_question * $award_for_wrong);
+        $marks_obtained = ($right_question * $award_for_right) -($wrong_question * $award_for_wrong);
         $percentage = ($marks_obtained / $max_marks) * 100.0;
 
-        $insertStmt = $conn->prepare("INSERT INTO Test_Scores (rollno, batch, testname, right_question, wrong_question, not_attempted, max_marks, award_for_wrong, award_for_right, marks_obtained, percentage, total_questions) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $insertStmt = $conn->prepare("INSERT INTO Test_Scores (rollno, batch, testname, right_question, wrong_question, not_attempted, max_marks, award_for_wrong, award_for_right, marks_obtained, percentage) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         if (!$insertStmt) {
             echo 'MySQL prepare error: ' . $conn->error;
             exit;
         }
-        $insertStmt->bind_param("isssiiididdi", $rollno, $batch, $testname, $right_question, $wrong_question, $not_attempted, $max_marks, $award_for_wrong, $award_for_right, $marks_obtained, $percentage, $total_questions);
-
+        $insertStmt->bind_param("isssiiididd", $rollno, $batch, $testname, $right_question, $wrong_question, $not_attempted, $max_marks, $award_for_wrong, $award_for_right, $marks_obtained, $percentage);
         if (!$insertStmt->execute()) {
             echo "Error: " . $insertStmt->error;
         } else {
@@ -68,6 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             exit;
         }
     } elseif (isset($_POST['upload'])) {
+        // Handling Excel file uploads for bulk entries
         if ($_FILES['file']['error'] !== UPLOAD_ERR_OK) {
             echo "Upload failed with error code " . $_FILES['file']['error'];
             exit;
@@ -79,43 +77,40 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $rows = $worksheet->toArray();
 
         foreach ($rows as $row) {
-             // Assuming Excel file columns match database fields directly
-             $testname = $row[2]; // Test name from Excel
-             $right_question = $row[3]; // Right questions from Excel
-             $wrong_question = $row[4]; // Wrong questions from Excel
-             $not_attempted = $row[5]; // Not attempted questions from Exce
-            $stmt = $conn->prepare("SELECT max_marks, award_for_wrong, award_for_right, total_questions FROM tests WHERE testname = ?");
+            // Assuming Excel file columns match database fields directly
+            $testname = $row[2]; // Test name from Excel
+            $right_question = $row[3]; // Right questions from Excel
+            $wrong_question = $row[4]; // Wrong questions from Excel
+            $not_attempted = $row[5]; // Not attempted questions from Excel
+
+            $stmt = $conn->prepare("SELECT max_marks, award_for_wrong, award_for_right FROM tests WHERE testname = ?");
             if (!$stmt) {
                 echo 'MySQL prepare error: ' . $conn->error;
                 continue; // Continue with next row in case of error
             }
-            $stmt->bind_param("s", $row[2]);
+            $stmt->bind_param("s", $testname);
             $stmt->execute();
             $result = $stmt->get_result();
             $data = $result->fetch_assoc();
 
             if (!$data) {
-                echo "Error retrieving test details for test: {$row[2]}";
-                continue;
+                echo "Error retrieving test details for test: $testname";
+                continue; // Continue with next row if test details not found
             }
 
-            $max_marks = (float) $data['max_marks'];
-            $award_for_wrong = (float) $data['award_for_wrong'];
-            $award_for_right = (float) $data['award_for_right'];
-            $total_questions = (int) $data['total_questions'];
+            $max_marks = $data['max_marks'];
+            $award_for_wrong = $data['award_for_wrong'];
+            $award_for_right = $data['award_for_right'];
 
-            $right_question = $row[3];
-            $wrong_question = $row[4];
-            $not_attempted = $row[5];
-            $marks_obtained = ($right_question * $award_for_right) - ($wrong_question * $award_for_wrong);
+            $marks_obtained = ($right_question * $award_for_right) + ($wrong_question * $award_for_wrong);
             $percentage = ($marks_obtained / $max_marks) * 100;
 
-            $insertStmt = $conn->prepare("INSERT INTO Test_Scores (rollno, batch, testname, right_question, wrong_question, not_attempted, max_marks, award_for_wrong, award_for_right, marks_obtained, percentage, total_questions) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $insertStmt = $conn->prepare("INSERT INTO Test_Scores (rollno, batch, testname, right_question, wrong_question, not_attempted, max_marks, award_for_wrong, award_for_right, marks_obtained, percentage) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             if (!$insertStmt) {
                 echo 'MySQL prepare error: ' . $conn->error;
-                continue;
+                continue; // Continue with next row in case of error
             }
-            $insertStmt->bind_param("isssiiididdi", $row[0], $row[1], $row[2], $right_question, $wrong_question, $not_attempted, $max_marks, $award_for_wrong, $award_for_right, $marks_obtained, $percentage, $total_questions);
+            $insertStmt->bind_param("isssiiididd", $row[0], $row[1], $testname, $right_question, $wrong_question, $not_attempted, $max_marks, $award_for_wrong, $award_for_right, $marks_obtained, $percentage);
             if (!$insertStmt->execute()) {
                 echo "Failed to insert data: " . $insertStmt->error;
             }

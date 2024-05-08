@@ -26,7 +26,17 @@ $rootUrl = (isset($_SERVER['HTTPS']) ? "http://localhost/teacher/" : "http://") 
             <span class="nav-link-text ms-1">Teacher Dashboard</span>
           </a>
         </li>
-        <li class="nav-item">
+        <!-- Dropdown for Test Management -->
+        <li class="nav-item" >
+                <a class="nav-link" href="#testManagement" data-toggle="collapse" aria-expanded="false" aria-controls="testManagement">
+                    <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="fa fa-folder-open text-dark text-lg" aria-hidden="true"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Prelims</span>
+                </a>
+                <div class="collapse" id="testManagement">
+                    <ul class="nav flex-column sub-menu">
+                    <li class="nav-item" >
           <a class="nav-link  " href="<?php echo $rootUrl; ?>/teacher/create_test.php">
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
             <i class="fa fa-plus-circle text-dark text-lg" aria-hidden="true"></i>
@@ -34,15 +44,17 @@ $rootUrl = (isset($_SERVER['HTTPS']) ? "http://localhost/teacher/" : "http://") 
             <span class="nav-link-text ms-1">Create Test</span>
           </a>
         </li>
-        <li class="nav-item">
+                        <!-- <li class="nav-item"> <a class="nav-link" href="<?php echo $rootUrl; ?>/teacher/create_test.php">Create Test</a></li>
+                        <li class="nav-item"> <a class="nav-link" href="<?php echo $rootUrl; ?>/teacher/delete_test.php">Delete Test</a></li> -->
+                        <li class="nav-item">
           <a class="nav-link  " href="<?php echo $rootUrl; ?>/teacher/delete_test.php">
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
             <i class="fa fa-trash-o text-dark text-lg" aria-hidden="true"></i>
 
             </div>
-            <span class="nav-link-text ms-1">Delete Test</span>
+            <span class="nav-link-text ms-1">Edit Test</span>
           </a>
-        </li>
+        </li>   
         <li class="nav-item">
           <a class="nav-link  " href="<?php echo $rootUrl; ?>/teacher/test_score.php">
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
@@ -51,9 +63,56 @@ $rootUrl = (isset($_SERVER['HTTPS']) ? "http://localhost/teacher/" : "http://") 
             </div>
             <span class="nav-link-text ms-1">Add Score</span>
           </a>
-        </li>
-       
+        </li>     
+                    </ul>
+                </div>
+            </li>
+
+
+<!-- Dropdown for Mains -->
+<li class="nav-item">
+                <a class="nav-link" href="#mains" data-toggle="collapse" aria-expanded="false" aria-controls="mains">
+                    <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="fa fa-folder-open text-dark text-lg" aria-hidden="true"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Mains</span>
+                </a>
+                <div class="collapse" id="mains">
+                    <ul class="nav flex-column sub-menu">
+                    
         <li class="nav-item">
+          <a class="nav-link  " href="<?php echo $rootUrl; ?>/teacher/create_mains_test.php">
+            <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+            <i class="fa fa-plus-circle text-dark text-lg" aria-hidden="true"></i>
+
+            </div>
+            <span class="nav-link-text ms-1">Create Test</span>
+          </a>
+        </li> 
+        <li class="nav-item">
+          <a class="nav-link  " href="<?php echo $rootUrl; ?>/teacher/create_mains_score.php">
+            <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+            <i class="fa fa-line-chart text-dark text-lg" aria-hidden="true"></i>
+
+            </div>
+            <span class="nav-link-text ms-1">Add Score</span>
+          </a>
+        </li> 
+                    </ul>
+                </div>
+            </li>
+
+
+            <li class="nav-item">
+                <a class="nav-link" href="#studentManagement" data-toggle="collapse" aria-expanded="false" aria-controls="studentManagement">
+                    <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="fa fa-folder-open text-dark text-lg" aria-hidden="true"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Student Management</span>
+                </a>
+                <div class="collapse" id="studentManagement">
+                    <ul class="nav flex-column sub-menu">
+                        <li class="nav-item">
           <a class="nav-link  " href="<?php echo $rootUrl; ?>/teacher/delete_test_score.php">
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
             <i class="fa fa-trash-o text-dark text-lg" aria-hidden="true"></i>
@@ -61,18 +120,19 @@ $rootUrl = (isset($_SERVER['HTTPS']) ? "http://localhost/teacher/" : "http://") 
             <span class="nav-link-text ms-1">Delete Score</span>
           </a>
         </li>
-        <li class="nav-item">
+                  <li class="nav-item">
           <a class="nav-link  " href="<?php echo $rootUrl; ?>/teacher/view_students.php">
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
             <i class="fa fa-user-o text-dark text-lg" aria-hidden="true"></i>
-            
-
-
             </div>
-            <span class="nav-link-text ms-1">Student Records</span>
+            <span class="nav-link-text ms-1">Edit Student Records</span>
           </a>
-        </li>
-       
+        </li>        
+                    </ul>
+                </div>
+            </li>
+
+ 
         <li class="nav-item mt-3">
           <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Account pages</h6>
         </li>

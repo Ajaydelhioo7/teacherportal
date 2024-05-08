@@ -9,9 +9,8 @@ if (!isset($_SESSION['teacher_id'])) {
     exit();
 }
 
-// Check if the delete action has been requested
-if (isset($_POST['delete_test'])) {
-    // Add a CSRF token check here for security
+// Handle Update or Delete action
+if (isset($_POST['action'])) {
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
         $_SESSION['message'] = "CSRF token mismatch.";
         header('Location: delete_test.php');
@@ -19,8 +18,8 @@ if (isset($_POST['delete_test'])) {
     }
 
     $test_id = $_POST['test_id'];
-    $stmt = $conn->prepare("DELETE FROM tests WHERE id = ?");
-    if ($stmt) {
+    if ($_POST['action'] == 'delete') {
+        $stmt = $conn->prepare("DELETE FROM tests WHERE id = ?");
         $stmt->bind_param("i", $test_id);
         if ($stmt->execute()) {
             $_SESSION['message'] = "Test deleted successfully!";
@@ -28,10 +27,20 @@ if (isset($_POST['delete_test'])) {
             $_SESSION['message'] = "Error deleting test: " . $stmt->error;
         }
         $stmt->close();
-    } else {
-        $_SESSION['message'] = "Error preparing statement: " . $conn->error;
+    } elseif ($_POST['action'] == 'update') {
+        $testname = $_POST['testname'];
+        $batch = $_POST['batch'];
+        $max_marks = $_POST['max_marks'];
+        $stmt = $conn->prepare("UPDATE tests SET testname = ?, batch = ?, max_marks = ? WHERE id = ?");
+        $stmt->bind_param("ssii", $testname, $batch, $max_marks, $test_id);
+        if ($stmt->execute()) {
+            $_SESSION['message'] = "Test updated successfully!";
+        } else {
+            $_SESSION['message'] = "Error updating test: " . $stmt->error;
+        }
+        $stmt->close();
     }
-    header('Location: delete_test.php'); // Redirect to prevent form resubmission issues
+    header('Location: delete_test.php');
     exit();
 }
 
@@ -73,19 +82,20 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
         </thead>
         <tbody>
             <?php while ($test = $tests_result->fetch_assoc()): ?>
-                <tr>
+            <tr>
+                <form action="delete_test.php" method="post">
                     <td><?= htmlspecialchars($test['id']); ?></td>
-                    <td><?= htmlspecialchars($test['testname']); ?></td>
-                    <td><?= htmlspecialchars($test['batch']); ?></td>
-                    <td><?= htmlspecialchars($test['max_marks']); ?></td>
+                    <td><input type="text" name="testname" value="<?= htmlspecialchars($test['testname']); ?>" class="form-control"></td>
+                    <td><input type="text" name="batch" value="<?= htmlspecialchars($test['batch']); ?>" class="form-control"></td>
+                    <td><input type="number" name="max_marks" value="<?= htmlspecialchars($test['max_marks']); ?>" class="form-control"></td>
                     <td>
-                        <form action="delete_test.php" method="post">
-                            <input type="hidden" name="test_id" value="<?= $test['id']; ?>">
-                            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token']; ?>">
-                            <button type="submit" name="delete_test" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this test?');">Delete</button>
-                        </form>
+                        <input type="hidden" name="test_id" value="<?= $test['id']; ?>">
+                        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token']; ?>">
+                        <button type="submit" name="action" value="update" class="btn btn-primary">Update</button>
+                        <button type="submit" name="action" value="delete" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this test?');">Delete</button>
                     </td>
-                </tr>
+                </form>
+            </tr>
             <?php endwhile; ?>
         </tbody>
     </table>

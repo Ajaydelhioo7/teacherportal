@@ -1,6 +1,6 @@
 <?php
 // Get the root URL of the website
-$rootUrl = (isset($_SERVER['HTTPS']) ? "http://localhost/student/" : "http://") . $_SERVER['HTTP_HOST'];
+$rootUrl = (isset($_SERVER['HTTPS']) ? "http://localhost/teacher/" : "http://") . $_SERVER['HTTP_HOST'];
 
 // If your application is in a subfolder, append the folder name to the root URL
 // For example, if your app is located in the 'myapp' folder, uncomment the line below and replace 'myapp' with the actual folder name
@@ -25,9 +25,9 @@ $rootUrl = (isset($_SERVER['HTTPS']) ? "http://localhost/student/" : "http://") 
   <link href="<?php echo $rootUrl; ?>/student/assets/css/nucleo-svg.css" rel="stylesheet" />
   <!-- Font Awesome Icons -->
   <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
-  <link href="/student/assets/css/nucleo-svg.css" rel="stylesheet" />
+  <link href="/teacher/assets/css/nucleo-svg.css" rel="stylesheet" />
   <!-- CSS Files -->
-  <link id="pagestyle" href="<?php echo $rootUrl; ?>/student/assets/css/soft-ui-dashboard.css?v=1.0.7" rel="stylesheet" />
+  <link id="pagestyle" href="<?php echo $rootUrl; ?>/teacher/assets/css/soft-ui-dashboard.css?v=1.0.7" rel="stylesheet" />
   <style>
     .logoimg{
       max-height:300px!important;
